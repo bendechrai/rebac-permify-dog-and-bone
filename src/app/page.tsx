@@ -4,21 +4,6 @@ import Image from "next/image";
 import styles from "./page.module.css";
 import { useEffect, useState } from "react";
 
-const checkPermissionPayload = {
-  metadata: {
-    depth: 10,
-  },
-  entity: {
-    type: "bone",
-    id: "Femur",
-  },
-  permission: "eat",
-  subject: {
-    type: "dog",
-    id: "Shadow",
-    relation: "",
-  },
-};
 const makeFriendsPayload = {
   metadata: {
     schema_version: "",
@@ -56,10 +41,57 @@ const breakFriendsPayload = {
   },
   attribute_filter: {},
 };
-
+const checkPermissionPayload = {
+  metadata: {
+      depth: 10,
+    },
+    entity: {
+      type: "bone",
+      id: "Femur",
+    },
+    permission: "eat",
+    subject: {
+      type: "dog",
+      id: "Shadow",
+      relation: "",
+    },
+  };
+  
 export default function Home() {
   const [doorOpen, setDoorOpen] = useState(false);
 
+  // Send the makeFriends payload to the server
+  async function makeFriends() {
+    const response = await fetch(
+      "http://localhost:3476/v1/tenants/dog-and-bone/data/write",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(makeFriendsPayload),
+      }
+    );
+    await response.json();
+  }
+
+  // Send the breakFriends payload to the server
+  async function breakFriends() {
+    const response = await fetch(
+      "http://localhost:3476/v1/tenants/dog-and-bone/data/delete",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(breakFriendsPayload),
+      }
+    );
+    await response.json();
+  }
+
+  // Send the permission payload to the server and
+  // set the doorOpen state based on the response
   async function checkPermission() {
     const response = await fetch(
       "http://localhost:3476/v1/tenants/dog-and-bone/permissions/check",
@@ -75,34 +107,7 @@ export default function Home() {
     setDoorOpen(data.can === "CHECK_RESULT_ALLOWED");
   }
 
-  async function makeFriends() {
-    const response = await fetch(
-      "http://localhost:3476/v1/tenants/dog-and-bone/data/write",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(makeFriendsPayload),
-      }
-    );
-    await response.json();
-  }
-
-  async function breakFriends() {
-    const response = await fetch(
-      "http://localhost:3476/v1/tenants/dog-and-bone/data/delete",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(breakFriendsPayload),
-      }
-    );
-    await response.json();
-  }
-
+  // Check permission every second
   useEffect(() => {
     checkPermission();
     const interval = setInterval(() => {
@@ -114,7 +119,7 @@ export default function Home() {
   return (
     <main>
       <h1>Dog and Bone</h1>
-      <button onClick={makeFriends}>Make Friends</button>
+      <button onClick={makeFriends}>Make Friends</button>{" "}
       <button onClick={breakFriends}>Break Friends</button>
       <div className={styles.main}>
         <div className={styles.grid}>
